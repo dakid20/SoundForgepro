@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundForge Pro | Studio & Mixer</title>
+    <style>
+        :root { --bg-dark: #08080a; --bg-panel: #111114; --bg-control: #1a1a1f; --accent-orange: #ff5500; --accent-blue: #00aaff; --text-main: #e0e0e0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text-main); margin: 0; overflow-x: hidden; user-select: none; }
+        .app-container { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; max-width: 1600px; margin: 0 auto; padding: 10px; gap: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; border-bottom: 1px solid #222; }
+        .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: -1px; color: white; }
+        .logo span { color: var(--accent-orange); }
+
+        /* DJ Section */
+        .dj-section { display: grid; grid-template-columns: 1fr 80px 1fr; gap: 15px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid #222; }
+        .deck { display: flex; flex-direction: column; gap: 10px; }
+        .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .deck-title { font-size: 1.5rem; font-weight: bold; opacity: 0.2; }
+        .title-a { color: var(--accent-orange); }
+        .title-b { color: var(--accent-blue); text-align: right; }
+
+        /* Controls */
+        .waveform-container { height: 80px; background: #000; border-radius: 8px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
+        
+        /* THE FIX: Added cursor pointer and hover effect */
+        .file-label { font-size: 0.8rem; color: #888; cursor: pointer; padding: 8px 16px; border: 1px solid #444; border-radius: 4px; transition: 0.2s; background: transparent; }
+        .file-label:hover { border-color: var(--accent-orange); color: white; }
+        
+        input[type="file"] { display: none; }
+
+        .controls-row { display: flex; gap: 15px; align-items: center; background: var(--bg-control); padding: 10px; border-radius: 8px; }
+        .play-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; font-weight: bold; font-size: 1.2rem; color: white; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .play-btn:active { transform: scale(0.95); }
+        .btn-a { background: var(--accent-orange); }
+        .btn-b { background: var(--accent-blue); }
+
+        /* Sliders */
+        .slider-vertical { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 20px; height: 80px; cursor: pointer; }
+        .knob-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .knob-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+        .eq-rack { display: flex; gap: 10px; justify-content: center; flex-grow: 1; }
+        .fader-group { display: flex; gap: 10px; align-items: center; height: 100%; }
+        .meter { width: 10px; height: 100px; background: #000; border-radius: 5px; position: relative; overflow: hidden; }
+        .meter-fill { position: absolute; bottom: 0; width: 100%; background: lime; transition: height 0.05s linear; }
+
+        /* Crossfader */
+        .xfader-area { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+        .xfader { width: 60px; transform: rotate(-90deg); cursor: pointer; }
+
+        /* Sequencer */
+        .sequencer-section { background: var(--bg-panel); border-radius: 12px; padding: 15px; border: 1px solid #222; }
+        .seq-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .grid { display: grid; gap: 2px; margin-top: 5px; }
+        .row { display: flex; align-items: center; }
+        .row-label { width: 50px; font-size: 0.8rem; color: #666; text-align: right; padding-right: 10px; }
+        .step { flex: 1; height: 30px; background: #222; cursor: pointer; border-radius: 4px; transition: background 0.1s; border: 1px solid #333; }
+        .step.on { background: var(--accent-orange); box-shadow: 0 0 8px rgba(255, 85, 0, 0.4); }
+        .step.playhead { border: 2px solid white; }
+        .step:nth-child(4n+1) { margin-left: 5px; }
+        select, input[type="number"] { background: #222; border: 1px solid #333; color: white; padding: 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div class="logo">SoundForge <span>PRO</span></div>
+        <div style="font-size: 0.8rem; color: #666;">System Ready • Click to Start</div>
+    </div>
+
+    <div class="dj-section">
+        <!-- DECK A -->
+        <div class="deck">
+            <div class="deck-header">
+                <div class="deck-title title-a">A</div>
+                <!-- FIX: Added ID and proper label linking -->
+                <label class="file-label" for="fileA" id="labelA">Load MP3</label>
+                <input type="file" id="fileA" accept="audio/*">
+            </div>
+            <div class="waveform-container"><span style="color:#333">Deck A</span></div>
+            <div class="controls-row">
+                <button class="play-btn btn-a" id="playA">▶</button>
+                <div class="eq-rack">
+                    <div class="knob-group"><div class="knob-label">High</div><input type="range" class="slider-vertical" id="highA" min="0" max="100" value="50"></div>
+                    <div class="knob-group"><div class="knob-label">Mid</div><input type="range" class="slider-vertical" id="midA" min="0" max="100" value="50"></div>
+                    <div class="knob-group"><div class="knob-label">Low</div><input type="range" class="slider-vertical" id="lowA" min="0" max="100" value="50"></div>
+                    <div class="knob-group"><div class="knob-label">Filter</div><input type="range" class="slider-vertical" id="filterA" min="0" max="100" value="0"></div>
+                </div>
+                <div class="fader-group">
+                    <input type="range" class="slider-vertical" id="volA" min="0" max="100" value="80" style="height:120px">
+                    <div class="meter"><div class="meter-fill" id="meterA"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="xfader-area">
+            <div style="margin: 20px 0;">
+                <div class="knob-label" style="text-align:center">MIX</div>
+                <input type="range" class="xfader" id="crossfader" min="0" max="100" value="50">
+            </div>
+        </div>
+
+        <!-- DECK B -->
+        <div class="deck">
+            <div class="deck-header">
+                <!-- FIX: Added ID and proper label linking -->
+                <label class="file-label" for="fileB" id="labelB">Load MP3</label>
+                <input type="file" id="fileB" accept="audio/*">
+                <div class="deck-title title-b">B</div>
+            </div>
+            <div class="waveform-container"><span style="color:#333">Deck B</span></div>
+            <div class="controls-row">
+                <div class="fader-group">
+                    <div class="meter"><div class="meter-fill" id="meterB"></div></div>
+                    <input type="range" class="slider-vertical" id="volB" min="0" max="100" value="80" style="height:120px">
+                </div>
+                <div class="eq-rack">
+                    <div class="knob-group"><div class="knob-label">Filter</div><input type="range" class="slider-vertical" id="filterB" min="0" max="100" value="0"></div>
+                    <div class="knob-group"><div class="knob-label">Low</div><input type="range" class="slider-vertical" id="lowB" min="0" max="100" value="50"></div>
+                    <div class="knob-group"><div class="knob-label">Mid</div><input type="range" class="slider-vertical" id="midB" min="0" max="100" value="50"></div>
+                    <div class="knob-group"><div class="knob-label">High</div><input type="range" class="slider-vertical" id="highB" min="0" max="100" value="50"></div>
+                </div>
+                <button class="play-btn btn-b" id="playB">▶</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="sequencer-section">
+        <div class="seq-header">
+            <div style="display:flex; gap:10px; align-items:center;">
+                <select id="genreSelect"><option value="hiphop">Hip-Hop</option><option value="house">House</option></select>
+                <div class="knob-group" style="flex-direction:row; align-items:center; gap:5px;">
+                    <span class="knob-label" style="margin:0">BPM</span>
+                    <input type="number" id="bpmInput" value="90" style="width: 50px;">
+                </div>
+            </div>
+            <button class="play-btn btn-a" style="width:80px; border-radius:20px; font-size:0.9rem;" id="seqBtn">▶ Start</button>
+        </div>
+        <div id="seqGrid" class="grid"></div>
+    </div>
+</div>
+
+<script>
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    class Deck {
+        constructor(id) {
+            this.id = id; this.source = null; this.buffer = null; this.isPlaying = false;
+            this.gainNode = ctx.createGain();
+            this.analyser = ctx.createAnalyser();
+            this.biqFilter = ctx.createBiquadFilter();
+            this.low = ctx.createBiquadFilter(); this.mid = ctx.createBiquadFilter(); this.high = ctx.createBiquadFilter();
+            
+            this.low.type = "lowshelf"; this.mid.type = "peaking"; this.high.type = "highshelf"; this.biqFilter.type = "lowpass";
+            
+            this.low.connect(this.mid); this.mid.connect(this.high); this.high.connect(this.biqFilter);
+            this.biqFilter.connect(this.gainNode); this.gainNode.connect(this.analyser); this.analyser.connect(ctx.destination);
+            this.analyser.fftSize = 256;
+        }
+        load(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                ctx.decodeAudioData(e.target.result, (buffer) => {
+                    this.buffer = buffer;
+                    document.getElementById('label' + this.id).innerText = file.name.substring(0, 15);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        play() {
+            if (!this.buffer) return; if (this.isPlaying) this.stop();
+            if (ctx.state === 'suspended') ctx.resume();
+            
+            this.source = ctx.createBufferSource(); this.source.buffer = this.buffer;
+            this.source.connect(this.low); this.source.loop = true;
+            this.source.start(0); this.isPlaying = true;
+            document.getElementById('play' + this.id).innerText = "■";
+            this.animFrame();
+        }
+        stop() { if (this.source) { this.source.stop(); this.isPlaying = false; document.getElementById('play' + this.id).innerText = "▶"; } }
+        animFrame() {
+            if (!this.isPlaying) return;
+            let data = new Uint8Array(this.analyser.frequencyBinCount);
+            this.analyser.getByteFrequencyData(data);
+            let avg = data.reduce((a, b) => a + b) / data.length;
+            document.getElementById('meter' + this.id).style.height = (avg/2) + '%';
+            requestAnimationFrame(() => this.animFrame());
+        }
+    }
+
+    const deckA = new Deck('A'); const deckB = new Deck('B');
+    
+    // FIX: Proper Event Listeners
+    document.getElementById('fileA').addEventListener('change', (e) => deckA.load(e.target.files[0]));
+    document.getElementById('fileB').addEventListener('change', (e) => deckB.load(e.target.files[0]));
+    document.getElementById('playA').addEventListener('click', () => deckA.isPlaying ? deckA.stop() : deckA.play());
+    document.getElementById('playB').addEventListener('click', () => deckB.isPlaying ? deckB.stop() : deckB.play());
+
+    document.getElementById('volA').addEventListener('input', (e) => deckA.gainNode.gain.value = e.target.value / 100);
+    document.getElementById('volB').addEventListener('input', (e) => deckB.gainNode.gain.value = e.target.value / 100);
+
+    document.getElementById('highA').addEventListener('input', (e) => deckA.high.frequency.value = 1000 + (e.target.value * 10));
+    document.getElementById('midA').addEventListener('input', (e) => deckA.mid.frequency.value = 1000 + (e.target.value * 10));
+    document.getElementById('lowA').addEventListener('input', (e) => deckA.low.frequency.value = 300 + (e.target.value * 5));
+    document.getElementById('filterA').addEventListener('input', (e) => deckA.biqFilter.frequency.value = 200 + (e.target.value * 180));
+
+    document.getElementById('highB').addEventListener('input', (e) => deckB.high.frequency.value = 1000 + (e.target.value * 10));
+    document.getElementById('midB').addEventListener('input', (e) => deckB.mid.frequency.value = 1000 + (e.target.value * 10));
+    document.getElementById('lowB').addEventListener('input', (e) => deckB.low.frequency.value = 300 + (e.target.value * 5));
+    document.getElementById('filterB').addEventListener('input', (e) => deckB.biqFilter.frequency.value = 200 + (e.target.value * 180));
+
+    document.getElementById('crossfader').addEventListener('input', (e) => {
+        const x = e.target.value / 100;
+        deckA.gainNode.gain.value = Math.cos(x * 0.5 * Math.PI);
+        deckB.gainNode.gain.value = Math.cos((1 - x) * 0.5 * Math.PI);
+    });
+
+    // Sequencer
+    let seqInterval = null; let stepIndex = 0;
+    let pattern = [[1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], [0,0,0,0, 0,0,1,0, 0,0,0,0, 0,0,1,0]];
+    const labels = ["Kick", "Snare", "Hat", "Perc"];
+
+    function playSynth(type) {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        if (type === 'kick') {
+            osc.frequency.setValueAtTime(150, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            gain.gain.setValueAtTime(1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            osc.type = "triangle"; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+        } else if (type === 'snare') {
+            const noise = ctx.createBufferSource();
+            noise.buffer = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate); let data = noise.buffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+            const noiseGain = ctx.createGain(); noise.connect(noiseGain); noiseGain.connect(ctx.destination);
+            noiseGain.gain.setValueAtTime(1, ctx.currentTime); noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            noise.start(ctx.currentTime);
+        } else if (type === 'hat') {
+            const noise = ctx.createBufferSource();
+            noise.buffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate); let data = noise.buffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+            const filter = ctx.createBiquadFilter(); filter.type = "highpass"; filter.frequency.value = 1000;
+            const noiseGain = ctx.createGain(); noise.connect(filter); filter.connect(noiseGain); noiseGain.connect(ctx.destination);
+            noiseGain.gain.setValueAtTime(0.5, ctx.currentTime); noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+            noise.start(ctx.currentTime);
+        } else if (type === 'perc') {
+            osc.frequency.value = 800; gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.type = "square"; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+        }
+    }
+
+    function buildGrid() {
+        const container = document.getElementById('seqGrid'); container.innerHTML = '';
+        pattern.forEach((row, rIdx) => {
+            const rowEl = document.createElement('div'); rowEl.className = 'row';
+            const label = document.createElement('div'); label.className = 'row-label'; label.innerText = labels[rIdx];
+            rowEl.appendChild(label);
+            row.forEach((val, cIdx) => {
+                const step = document.createElement('div'); step.className = 'step' + (val ? ' on' : '');
+                step.onclick = () => { pattern[rIdx][cIdx] = pattern[rIdx][cIdx] ? 0 : 1; step.classList.toggle('on'); };
+                rowEl.appendChild(step);
+            });
+            container.appendChild(rowEl);
+        });
+    }
+
+    document.getElementById('seqBtn').addEventListener('click', () => {
+        const btn = document.getElementById('seqBtn');
+        const bpm = parseInt(document.getElementById('bpmInput').value) || 90;
+        const time = (60 / bpm) / 4 * 1000; 
+        if (seqInterval) {
+            clearInterval(seqInterval); seqInterval = null; btn.innerText = "▶ Start"; btn.classList.remove('bg-red-600');
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('playhead'));
+        } else {
+            if (ctx.state === 'suspended') ctx.resume(); btn.innerText = "■ Stop";
+            seqInterval = setInterval(() => {
+                if (pattern[0][stepIndex]) playSynth('kick');
+                if (pattern[1][stepIndex]) playSynth('snare');
+                if (pattern[2][stepIndex]) playSynth('hat');
+                if (pattern[3][stepIndex]) playSynth('perc');
+                const cols = document.querySelectorAll('.row');
+                cols.forEach((row) => { const steps = row.querySelectorAll('.step'); steps.forEach((s, c) => { s.classList.remove('playhead'); if (c === stepIndex) s.classList.add('playhead'); }); });
+                stepIndex = (stepIndex + 1) % 16;
+            }, time);
+        }
+    });
+
+    buildGrid();
+</script>
+</body>
+</html>
